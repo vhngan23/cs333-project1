@@ -8,7 +8,7 @@ A Linux kernel module which creates a character device allowing processes on use
 
 - Compile the module
 ```shell
-$ cd Project 1
+$ cd Project1
 $ make
 ```
 - Install the module into the kernel
