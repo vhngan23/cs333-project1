@@ -3,6 +3,7 @@
 A Linux kernel module which creates a character device allowing processes on user space to open and read a random number.
 
 ---
+## NOTE: Install the module BEFORE running the application
 
 ## Installation/Uninstallation for module
 
