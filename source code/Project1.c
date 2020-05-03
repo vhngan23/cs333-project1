@@ -10,11 +10,12 @@
 #include <linux/uaccess.h>
 #include "Project1.h"
 #include <linux/slab.h>
+//#include <math.h>
 
 
 static struct cdev c_dev; // global variable for the character device 
 static struct class *cl; // global variable for the device class
-static char RandNum;
+unsigned int RandNum;
 
 typedef struct vchar_dev{
 	unsigned char *control_regs;
@@ -81,16 +82,42 @@ static int my_release(struct inode *inode, struct file *f){
 
 static ssize_t my_read(struct file *f, char __user *buf, size_t len, loff_t *off)
 {
+	int digit, number_of_digit, i, j, num, ret;
+ 	char temp, arrRandNum[100];
+ 	digit = 0; number_of_digit = 0; i = 0;
+ 	for (j = 0; j < 100; j++){
+ 		arrRandNum[j] = '\0';
+ 	}
+ 		
  	printk(KERN_INFO "Driver: read()\n");
 
- 	get_random_bytes(&RandNum, sizeof(char));
+	/* Get random number in type int */
+ 	get_random_bytes(&RandNum, 2);  		
  	printk(KERN_INFO "Random number is %d\n", RandNum);
- 	if(off > 0)
-        	return 0;
- 	if (copy_to_user(buf, &RandNum, 1))
- 		return -EFAULT;
- 	off++;
- 	return 1;
+ 	
+ 	/* Convert the random number from type int to array */
+ 	num = RandNum;
+ 	do {
+ 		digit = num%10;
+ 		arrRandNum[number_of_digit] = digit + '0';
+ 		num = num/10;
+ 		number_of_digit ++;
+ 	} while (num > 0);
+ 	
+ 	while (i < number_of_digit/2) {
+ 		temp = arrRandNum[i];
+ 		arrRandNum[i] = arrRandNum[number_of_digit-1-i];
+ 		arrRandNum[number_of_digit-1-i] = temp;
+ 		i++;
+ 	}
+ 	
+ 	arrRandNum[number_of_digit] = '\0';
+ 	
+ 	printk("arrRandNum = %s", arrRandNum); 	// double check 
+ 	
+	/* Transfer the random number to userspace */
+ 	ret = copy_to_user(buf, &arrRandNum, len);
+ 	return ret;
 }
 
 static ssize_t my_write(struct file *f, const char __user *buf, size_t len, loff_t *off)
@@ -137,6 +164,7 @@ static int __init chardrv_init(void)
  	}
  	
  	/* Allocate data structure of driver */
+ 	// Cap phat bo nho
  	vchar_drv.chardrv_hw = kzalloc(sizeof(vchar_dev_t), GFP_KERNEL);
  	if (!vchar_drv.chardrv_hw)
  	{

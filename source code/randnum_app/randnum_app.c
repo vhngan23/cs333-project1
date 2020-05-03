@@ -5,7 +5,7 @@
 
 #define DEVICE_NODE "/dev/Project1_device"
 
-/* Check entry point open cua of character driver */
+/* Check entry point open of character driver */
 int open_chardrv() {
     int temp = open(DEVICE_NODE, O_RDWR);
     if(temp < 0) {
@@ -22,15 +22,22 @@ void close_chardrv(int temp) {
 
 /* Get the random number from character device */
 void getnum_chardrv(){
-	int randnum;
+	int i;
+	char randnum[100];
+	for (i = 0; i < 100; i++)
+	{
+		randnum[i] = '\0';
+	}
+	
 	int temp = openat(temp, DEVICE_NODE, O_RDONLY);
 	if(temp < 0){
 		printf("Failed to open device file\n");
 		return;
 	}
-	read(temp, &randnum, sizeof(randnum));
+	
+	read(temp, &randnum, sizeof(randnum)); // get the random number from kernel
+	printf("The random number is: %s\n", randnum);
 	close_chardrv(temp);
-	printf("The random number is: %d\n", randnum);
 }
 
 int main() {
@@ -54,9 +61,6 @@ int main() {
                     printf("%s has already opened.\n", DEVICE_NODE);
                 break;
             case 'r':
-                if (temp < 0)
-                    printf("%s has not opened yet! You need to open the device node first.\n", DEVICE_NODE);
-                else
                     getnum_chardrv();
                 break;
             case 'c':
